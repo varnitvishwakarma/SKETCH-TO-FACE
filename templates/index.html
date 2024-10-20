@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sketch 2 Photo Generation</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #00bfff;
+            color: white;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .container {
+            background: #373333;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+            text-align: center;
+            width: 80%;
+            max-width: 600px;
+        }
+
+        h1 {
+            color: #00bfff;
+            margin-bottom: 20px;
+        }
+
+        form {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 10px;
+            font-size: 18px;
+            color: #ccc;
+        }
+
+        input[type="file"] {
+            display: block;
+            margin: 0 auto 20px;
+            padding: 10px;
+            border: 2px solid #00bfff;
+            border-radius: 5px;
+            cursor: pointer;
+            background: #302d2d;
+            color: white;
+        }
+
+        button {
+            background: #00bfff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: 0.3s ease;
+        }
+
+        button:hover {
+            background: #0099cc;
+        }
+
+        .images {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 20px;
+        }
+
+        .images div {
+            text-align: center;
+            width: 45%;
+        }
+
+        .images img {
+            width: 100%;
+            height: auto;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            margin-top: 10px;
+        }
+
+        .download-button {
+            margin-top: 20px;
+            display: block;
+            background: #00bfff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: 0.3s ease;
+            text-decoration: none;
+        }
+
+        .download-button:hover {
+            background: #0099cc;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Sketch 2 Photo Generation</h1>
+        <form id="upload-form" method="POST" enctype="multipart/form-data">
+            <label for="file-input">Upload a sketch:</label>
+            <input type="file" id="file-input" accept="image/*" name="sketch">
+            <button type="submit">Generate Photo</button>
+        </form>
+        <div class="images">
+            <div>
+                <h2>Uploaded Sketch</h2>
+                <img id="sketch-img" src="" alt="Sketch Image">
+            </div>
+            <div>
+                <h2>Generated Photo</h2>
+                <img id="generated-img" src="" alt="Generated Image">
+                <a id="download-button" class="download-button" href="" download="generated-photo.png" style="display: none;">Download Photo</a>
+            </div>
+        </div>
+    </div>
+    <script>
+        document.getElementById('upload-form').addEventListener('submit', async function(event) {
+            event.preventDefault();
+
+            const fileInput = document.getElementById('file-input');
+            const sketchImg = document.getElementById('sketch-img');
+            const generatedImg = document.getElementById('generated-img');
+            const downloadButton = document.getElementById('download-button');
+
+            if (fileInput.files.length === 0) {
+                alert('Please upload a sketch image.');
+                return;
+            }
+
+            const file = fileInput.files[0];
+            const reader = new FileReader();
+
+            reader.onload = async function(e) {
+                sketchImg.src = e.target.result;
+
+                const formData = new FormData();
+                formData.append('sketch', file);
+
+                try {
+                    const response = await fetch('/generate', {
+                        method: 'POST',
+                        body: formData
+                    });
+
+                    if (!response.ok) {
+                        throw new Error('Failed to generate image');
+                    }
+
+                    const blob = await response.blob();
+                    const url = URL.createObjectURL(blob);
+                    generatedImg.src = url;
+                    downloadButton.href = url;
+                    downloadButton.style.display = 'block'; 
+                } catch (error) {
+                    console.error('Error:', error);
+                    alert('An error occurred while generating the image.');
+                }
+            };
+
+            reader.readAsDataURL(file);
+        });
+    </script>
+</body>
+</html>
